@@ -1,177 +1,462 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>VibeAI Terminal</title>
-    <style>
-        body {
-            background: #0f0f0f; 
-            color: #e0e0e0;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #glass-container {
-            width: 80%;
-            height: 85%;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        #top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
-        }
-        select {
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
-            border-radius: 10px;
-            outline: none;
-            font-family: inherit;
-            cursor: pointer;
-        }
-        #chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .message {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 10px;
-            line-height: 1.5;
-            white-space: pre-wrap; 
-        }
-        /* The custom frosted glass box */
-        .thinking-box {
-            background: rgba(0, 0, 0, 0.4);
-            border-left: 3px solid #555;
-            color: #aaa;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 0 10px 10px 0;
-            font-size: 0.9em;
-            font-style: italic;
-        }
-        input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            color: white;
-            border-radius: 10px;
-            outline: none;
-            margin-top: 15px;
-            font-size: 1em;
-        }
-        input:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        /* Custom animation for the status text */
-        .status-text {
-            color: #888;
-            font-style: italic;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-    </style>
-</head>
-<body>
-    <div id="glass-container">
-        <div id="top-bar">
-            <h3 style="margin: 0; font-weight: 400; letter-spacing: 1px;">VibeAI <span style="font-size: 0.5em; color: #888;">OFFLINE</span></h3>
-            <select id="model-select">
-                <option value="deepseek-r1:8b">DeepSeek-R1 (8B)</option>
-                <option value="gemma4:e4b">Gemma 4 (e4b)</option>
-            </select>
-        </div>
 
-        <div id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Initiate sequence...">
+<head>
+  <meta charset="UTF-8" />
+  <title>VibeAI Terminal</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #e0e0e0;
+      font-family: "Inter", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #glass-container {
+      width: 80%;
+      height: 85%;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s;
+    }
+
+    #glass-container.drag-over {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px dashed rgba(76, 175, 80, 0.8);
+      box-shadow: 0 10px 40px rgba(76, 175, 80, 0.2);
+    }
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 15px;
+    }
+
+    select {
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 15px;
+      border-radius: 10px;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    #chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px;
+      border-radius: 10px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* The custom frosted glass box */
+    .thinking-box {
+      background: rgba(0, 0, 0, 0.4);
+      border-left: 3px solid #555;
+      color: #aaa;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      color: white;
+      border-radius: 10px;
+      outline: none;
+      margin-top: 15px;
+      font-size: 1em;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Custom animation for the status text */
+    .status-text {
+      color: #888;
+      font-style: italic;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.5;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.5;
+      }
+    }
+
+    /* Stop button styling */
+    #input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    #input-area input {
+      flex-grow: 1;
+      margin-top: 0;
+    }
+
+    #stop-btn {
+      display: none;
+      background: rgba(244, 67, 54, 0.1);
+      color: rgba(244, 67, 54, 0.8);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      padding: 0 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    #stop-btn:hover {
+      background: rgba(244, 67, 54, 0.2);
+      color: rgba(244, 67, 54, 1);
+      border-color: rgba(244, 67, 54, 0.5);
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 10px;
+      padding: 0 15px;
+      cursor: pointer;
+      font-size: 1.2em;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .icon-btn.recording {
+      color: #f44336;
+      animation: pulse 1s infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="glass-container">
+    <div id="top-bar">
+      <h3 style="margin: 0; font-weight: 400; letter-spacing: 1px">
+        VibeAI <span style="font-size: 0.5em; color: #888">OFFLINE</span>
+      </h3>
+      <div style="display: flex; gap: 10px;">
+        <select id="voice-select" title="TTS Voice" style="max-width: 200px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"></select>
+        <select id="model-select">
+          <option value="deepseek-r1:8b">DeepSeek-R1 (8B)</option>
+          <option value="gemma4:e4b">Gemma 4 (e4b)</option>
+          <option value="qwen2.5-coder:7b">Qwen Coder (7b)</option>
+          <option value="llava:latest">LLaVA (Vision/Images)</option>
+        </select>
+      </div>
     </div>
 
-    <script>
-        const input = document.getElementById('user-input');
-        const chatBox = document.getElementById('chat-box');
-        const modelSelect = document.getElementById('model-select');
+    <div id="chat-box"></div>
+    <div id="attachment-preview" style="display: none; padding: 5px 10px; font-size: 0.85em; color: #4CAF50; border: 1px solid #4CAF50; border-radius: 5px; margin-bottom: 10px; background: rgba(76, 175, 80, 0.1);"></div>
+    <div id="input-area">
+      <button id="attach-btn" class="icon-btn" title="Attach Document/Image">📎</button>
+      <button id="mic-btn" class="icon-btn" title="Voice Input">🎤</button>
+      <input type="file" id="file-upload" style="display: none;" multiple />
+      <input type="text" id="user-input" placeholder="Initiate sequence..." />
+      <button id="stop-btn">Stop</button>
+    </div>
+  </div>
 
-        let isGenerating = false; 
+  <script>
+    const input = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+    const modelSelect = document.getElementById("model-select");
+    const stopBtn = document.getElementById("stop-btn");
+    const voiceSelect = document.getElementById("voice-select");
+    
+    // Voices
+    let systemVoices = [];
+    const populateVoices = () => {
+      systemVoices = window.speechSynthesis.getVoices();
+      voiceSelect.innerHTML = '';
+      systemVoices.forEach((voice, index) => {
+        const option = document.createElement("option");
+        option.textContent = `${voice.name} (${voice.lang})`;
+        option.value = index;
+        voiceSelect.appendChild(option);
+      });
+    };
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
 
-        input.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter' && input.value.trim() !== '' && !isGenerating) {
-                isGenerating = true;
-                const text = input.value;
-                input.value = '';
-                const activeModel = modelSelect.value;
-                
-                chatBox.innerHTML += `<div class="message"><b>You:</b>\n${text}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-                
-                let aiResponse = document.createElement('div');
-                aiResponse.className = "message";
-                aiResponse.innerHTML = `<b style="color: #4CAF50;">${activeModel.split(':')[0]}:</b>\n<span class="status-text">Connecting to engine...</span>`;
-                chatBox.appendChild(aiResponse);
+    // Attachments & Audio
+    const attachBtn = document.getElementById("attach-btn");
+    const fileUpload = document.getElementById("file-upload");
+    const micBtn = document.getElementById("mic-btn");
+    const attachmentPreview = document.getElementById("attachment-preview");
 
-                try {
-                    const response = await fetch('/chat', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            model: activeModel,
-                            messages: [{role: 'user', content: text}]
-                        })
-                    });
+    let isGenerating = false;
+    let abortController = null;
+    let attachedFiles = [];
 
-                    if (!response.ok) throw new Error("Backend connection failed.");
+    attachBtn.addEventListener("click", () => fileUpload.click());
 
-                    aiResponse.innerHTML = `<b style="color: #4CAF50;">${activeModel.split(':')[0]}:</b>\n<span class="status-text">Connected. Booting logic...</span>`;
+    const updateAttachmentPreview = () => {
+      if (attachedFiles.length > 0) {
+        attachmentPreview.style.display = "block";
+        let names = attachedFiles.map(f => f.name).join(", ");
+        attachmentPreview.innerText = `📎 Attached: ${names}`;
+      } else {
+        attachmentPreview.style.display = "none";
+      }
+    };
 
-                    const reader = response.body.getReader();
-                    let fullText = "";
+    fileUpload.addEventListener("change", () => {
+      for (let file of fileUpload.files) {
+        attachedFiles.push(file);
+      }
+      fileUpload.value = ""; // reset input so same file can be selected again
+      updateAttachmentPreview();
+    });
 
-                    while (true) {
-                        const {done, value} = await reader.read();
-                        if (done) break;
-                        let rawPacket = new TextDecoder().decode(value);
-console.log("INCOMING RAW PACKET: ", rawPacket);  // <-- THE WIRETAP
-fullText += rawPacket;
-                        
-                        // 1. THE ARMOR: Strip all HTML brackets so DeepSeek can't crash the browser
-                        let safeText = fullText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                        
-                        // 2. THE PAINT: Inject our custom frosted glass box cleanly
-                        safeText = safeText.replace(/&lt;think&gt;/gi, '<div class="thinking-box">💭 <b>Internal Logic:</b><br>');
-                        safeText = safeText.replace(/&lt;\/think&gt;/gi, '</div>');
-                        
-                        aiResponse.innerHTML = `<b style="color: #4CAF50;">${activeModel.split(':')[0]}:</b>\n\n` + safeText;
-                        chatBox.scrollTop = chatBox.scrollHeight;
+    // Drag and Drop
+    const glassContainer = document.getElementById("glass-container");
+    glassContainer.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      glassContainer.classList.add("drag-over");
+    });
+    glassContainer.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      glassContainer.classList.remove("drag-over");
+    });
+    glassContainer.addEventListener("drop", (e) => {
+      e.preventDefault();
+      glassContainer.classList.remove("drag-over");
+      if (e.dataTransfer.files.length > 0) {
+        for (let file of e.dataTransfer.files) {
+            attachedFiles.push(file);
+        }
+        updateAttachmentPreview();
+      }
+    });
+
+    let recognition;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      recognition.onstart = () => micBtn.classList.add("recording");
+      recognition.onresult = (event) => input.value += (input.value ? " " : "") + event.results[0][0].transcript;
+      recognition.onerror = () => micBtn.classList.remove("recording");
+      recognition.onend = () => micBtn.classList.remove("recording");
+    } else {
+      micBtn.style.display = "none";
+    }
+
+    micBtn.addEventListener("click", () => {
+      if (recognition) {
+        micBtn.classList.contains("recording") ? recognition.stop() : recognition.start();
+      }
+    });
+
+    stopBtn.addEventListener("click", () => {
+      if (abortController) abortController.abort();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    });
+
+    input.addEventListener("keypress", async (e) => {
+      if (e.key === "Enter" && (input.value.trim() !== "" || attachedFiles.length > 0) && !isGenerating) {
+        isGenerating = true;
+        window.__currentThinkOpenState = true;
+        stopBtn.style.display = "block";
+        input.disabled = true;
+        abortController = new AbortController();
+
+        const text = input.value;
+        input.value = "";
+        const activeModel = modelSelect.value;
+
+        let userMessageHtml = `<b>You:</b>\n${text}`;
+        if (attachedFiles.length > 0) {
+            let names = attachedFiles.map(f => f.name).join(", ");
+            userMessageHtml += `\n<i>[📎 Attached: ${names}]</i>`;
+        }
+        chatBox.innerHTML += `<div class="message">${userMessageHtml}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        let aiResponse = document.createElement("div");
+        aiResponse.className = "message";
+        
+        let aiHeader = document.createElement("div");
+        aiHeader.style.marginBottom = "5px";
+        aiHeader.innerHTML = `<b style="color: #4CAF50;">${activeModel.split(":")[0]}:</b>`;
+        
+        let fullText = ""; // Moved up here so the button can access it
+        let ttsBtn = document.createElement("button");
+        ttsBtn.className = "icon-btn";
+        ttsBtn.style.padding = "2px 8px";
+        ttsBtn.style.fontSize = "0.8em";
+        ttsBtn.style.marginLeft = "10px";
+        ttsBtn.innerHTML = "🔊";
+        ttsBtn.title = "Read Aloud";
+        ttsBtn.onclick = () => {
+             if (window.speechSynthesis.speaking) {
+                 window.speechSynthesis.cancel();
+                 ttsBtn.innerHTML = "🔊";
+             } else {
+                 let spokenText = fullText.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/&lt;think&gt;[\s\S]*?&lt;\/think&gt;/gi, "").replace(/<[^>]*>?/gm, '');
+                 if ('speechSynthesis' in window && spokenText.trim() !== "") {
+                     let utterance = new SpeechSynthesisUtterance(spokenText.trim());
+                     let selectedVoice = systemVoices[voiceSelect.value];
+                     if (selectedVoice) {
+                         utterance.voice = selectedVoice;
+                     }
+                     utterance.onend = () => ttsBtn.innerHTML = "🔊";
+                     ttsBtn.innerHTML = "⏹️";
+                     window.speechSynthesis.speak(utterance);
+                 }
+             }
+        };
+        aiHeader.appendChild(ttsBtn);
+        
+        let aiText = document.createElement("div");
+        aiText.innerHTML = `<span class="status-text">Connecting to engine...</span>`;
+        
+        aiResponse.appendChild(aiHeader);
+        aiResponse.appendChild(aiText);
+        chatBox.appendChild(aiResponse);
+
+        try {
+          const formData = new FormData();
+          formData.append('model', activeModel);
+          formData.append('text', text);
+          for (let file of attachedFiles) {
+            formData.append('file', file);
+          }
+
+          const response = await fetch("/chat", {
+            method: "POST",
+            body: formData,
+            signal: abortController.signal
+          });
+
+          if (!response.ok) throw new Error("Backend connection failed.");
+
+          aiText.innerHTML = `<span class="status-text">Connected. Booting logic...</span>`;
+
+          const reader = response.body.getReader();
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            let rawPacket = new TextDecoder().decode(value);
+            console.log("INCOMING RAW PACKET: ", rawPacket); // <-- THE WIRETAP
+            fullText += rawPacket;
+
+            // 1. THE ARMOR: Strip all HTML brackets so DeepSeek can't crash the browser
+            let safeText = fullText
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+
+            // Preserve the open/closed state using global tracker to bypass innerHTML destruction
+            let isThinkOpen = window.__currentThinkOpenState;
+
+            // 2. THE PAINT: Inject our custom frosted glass box cleanly
+            safeText = safeText.replace(
+              /&lt;think&gt;/gi,
+              `<details class="thinking-box" ${isThinkOpen ? "open" : ""}><summary onmousedown="this.parentElement.open = !this.parentElement.open; window.__currentThinkOpenState = this.parentElement.open;" onclick="event.preventDefault();" style="cursor: pointer; user-select: none;">💭 <b>Internal Logic</b></summary><div style="margin-top: 10px;">`,
+            );
+            safeText = safeText.replace(/&lt;\/think&gt;/gi, "</div></details>");
+
+            // 3. THE POLISH: Apply Markdown styling dynamically without breaking code
+            let parts = safeText.split("```");
+            for (let i = 0; i < parts.length; i++) {
+                if (i % 2 === 0) {
+                    let subParts = parts[i].split("`");
+                    for (let j = 0; j < subParts.length; j++) {
+                        if (j % 2 === 0) {
+                            subParts[j] = subParts[j].replace(/^### (.*$)/gm, "<span style='font-size: 1.2em; font-weight: bold; color: #fff;'>$1</span>");
+                            subParts[j] = subParts[j].replace(/^## (.*$)/gm, "<span style='font-size: 1.4em; font-weight: bold; color: #fff;'>$1</span>");
+                            subParts[j] = subParts[j].replace(/^# (.*$)/gm, "<span style='font-size: 1.6em; font-weight: bold; color: #fff;'>$1</span>");
+                            subParts[j] = subParts[j].replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+                            subParts[j] = subParts[j].replace(/\*(.*?)\*/g, "<i>$1</i>");
+                        } else {
+                            subParts[j] = `<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace;">${subParts[j]}</code>`;
+                        }
                     }
-                } catch (error) {
-                    aiResponse.innerHTML = `<b style="color: #f44336;">System Error:</b> connection dropped. Check the VS Code terminal.`;
+                    parts[i] = subParts.join("");
+                } else {
+                    parts[i] = `<pre style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; overflow-x: auto; margin: 10px 0;"><code style="font-family: monospace;">${parts[i]}</code></pre>`;
                 }
-                
-                isGenerating = false; 
             }
-        });
-    </script>
+            safeText = parts.join("");
+
+            // SMART SCROLL: Only auto-scroll if user is already at the bottom
+            let isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight - chatBox.scrollTop <= 50;
+            aiText.innerHTML = safeText;
+            if (isScrolledToBottom) {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+          }
+
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            aiText.innerHTML += `<br><span style="color: #f44336; font-style: italic;">[Extraction Halted]</span>`;
+          } else {
+            aiText.innerHTML = `<b style="color: #f44336;">System Error:</b> connection dropped. Check the VS Code terminal.`;
+          }
+        } finally {
+          isGenerating = false;
+          stopBtn.style.display = "none";
+          input.disabled = false;
+          attachedFiles = [];
+          fileUpload.value = "";
+          attachmentPreview.style.display = "none";
+          input.focus();
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
