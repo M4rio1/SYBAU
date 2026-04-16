@@ -45,9 +45,11 @@ def chat():
         data = request.json
         model_name = data.get('model', 'deepseek-r1:8b')
         messages = data.get('messages', [])
+        show_thinking = data.get('showThinking', True)
     else:
         model_name = request.form.get('model', 'deepseek-r1:8b')
         user_text = request.form.get('text', '')
+        show_thinking = request.form.get('showThinking', 'true').lower() == 'true'
 
         message_obj = {"role": "user", "content": user_text}
 
@@ -91,10 +93,19 @@ def chat():
     def generate():
         try:
             url = 'http://127.0.0.1:11434/api/chat'
+            
+            # If thinking is disabled, we instruct the model to avoid generating it
+            if not show_thinking:
+                # Prepend the system anti-think prompt
+                messages.insert(0, {
+                    "role": "system", 
+                    "content": "Respond directly and immediately. Do NOT use <think> tags. Do NOT output your reasoning or thinking process. Just give the final answer."
+                })
+
             payload = {
                 "model": model_name,
                 "messages": messages,
-                "think": True
+                "think": show_thinking
             }
 
             in_thinking = False

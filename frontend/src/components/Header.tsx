@@ -6,6 +6,8 @@ interface Props {
   selectedModel: string;
   models: ModelInfo[];
   onModelChange: (model: string) => void;
+  showThinking: boolean;
+  onToggleThinking: () => void;
   onNewChat: () => void;
   theme: string;
   toggleTheme: () => void;
@@ -16,15 +18,33 @@ export default function Header({
   selectedModel,
   models,
   onModelChange,
+  showThinking,
+  onToggleThinking,
   onNewChat,
   theme,
   toggleTheme,
 }: Props) {
   return (
     <header className="absolute top-5 right-5 z-50">
-      {/* Right: model selector + new chat */}
+      {/* Right: model selector + thinking toggle + new chat */}
       <div className="flex items-center gap-2 shrink-0 relative">
         <ModelSelector value={selectedModel} models={models} onChange={onModelChange} />
+
+        <button
+          onClick={onToggleThinking}
+          className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-2xl transition-colors cursor-pointer border ${
+            showThinking 
+              ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20' 
+              : 'text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 hover:text-zinc-800 dark:hover:text-zinc-200'
+          }`}
+          title="Toggle Thinking Output"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+          </svg>
+          Thinking
+        </button>
 
         <button
           onClick={onNewChat}

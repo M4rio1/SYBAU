@@ -7,9 +7,10 @@ import { getModelIcon } from "../utils/modelIcons";
 interface Props {
   conversation: Conversation | null;
   isStreaming: boolean;
+  showThinking: boolean;
 }
 
-export default function ChatPane({ conversation, isStreaming }: Props) {
+export default function ChatPane({ conversation, isStreaming, showThinking }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +58,7 @@ export default function ChatPane({ conversation, isStreaming }: Props) {
     <div ref={containerRef} className="flex-1 overflow-y-auto relative">
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-6">
         {conversation.messages.map((msg) => (
-          <MessageItem key={msg.id} message={msg} />
+          <MessageItem key={msg.id} message={msg} showThinking={showThinking} />
         ))}
 
         {/* Streaming indicator — only show if last message is empty assistant */}

@@ -6,9 +6,10 @@ import { getModelIcon } from '../utils/modelIcons'
 
 interface Props {
   message: Message
+  showThinking?: boolean
 }
 
-export default function MessageItem({ message }: Props) {
+export default function MessageItem({ message, showThinking = true }: Props) {
   const [thinkOpen, setThinkOpen] = useState(true)
   const [ttsPlaying, setTtsPlaying] = useState(false)
 
@@ -99,7 +100,7 @@ export default function MessageItem({ message }: Props) {
         </div>
 
         {/* Thinking block */}
-        {message.thinking != null && (
+        {showThinking && message.thinking != null && (
           <details
             open={thinkOpen}
             onToggle={(e) => setThinkOpen((e.target as HTMLDetailsElement).open)}

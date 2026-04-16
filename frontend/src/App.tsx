@@ -16,6 +16,7 @@ export default function App() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>(FALLBACK_MODELS);
   const [selectedModel, setSelectedModel] = useState<string>(FALLBACK_MODELS[0].value);
+  const [showThinking, setShowThinking] = useState<boolean>(true);
   const [isStreaming, setIsStreaming] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -99,6 +100,7 @@ export default function App() {
       const fd = new FormData();
       fd.append("model", selectedModel);
       fd.append("text", text);
+      fd.append("showThinking", showThinking.toString());
       for (const file of files) fd.append("file", file);
 
       const res = await fetch("http://127.0.0.1:5000/chat", {
@@ -233,11 +235,13 @@ export default function App() {
           selectedModel={selectedModel}
           models={availableModels}
           onModelChange={setSelectedModel}
+          showThinking={showThinking}
+          onToggleThinking={() => setShowThinking(!showThinking)}
           onNewChat={createConversation}
           theme={theme}
           toggleTheme={toggleTheme}
         />
-        <ChatPane conversation={activeConv} isStreaming={isStreaming} />
+        <ChatPane conversation={activeConv} isStreaming={isStreaming} showThinking={showThinking} />
         <Composer
           onSend={handleSend}
           onStop={handleStop}
