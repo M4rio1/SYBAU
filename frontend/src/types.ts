@@ -23,6 +23,12 @@ export interface ModelInfo {
   label: string;
 }
 
+export interface TuningOptions {
+  temperature: number;
+  num_ctx: number;
+  seed?: number;
+}
+
 export const FALLBACK_MODELS: ModelInfo[] = [
   { value: 'deepseek-r1:8b', label: 'DeepSeek-R1 (8B)' },
   { value: 'gemma4:e4b', label: 'Gemma 4 (e4b)' },

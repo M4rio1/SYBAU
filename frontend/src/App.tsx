@@ -5,7 +5,8 @@ import ChatPane from "./components/ChatPane";
 import Composer from "./components/Composer";
 import PullModelModal from "./components/PullModelModal";
 import HardwareMonitor from "./components/HardwareMonitor";
-import type { Conversation, Message, ModelInfo } from "./types";
+import TuningPanel from "./components/TuningPanel";
+import type { Conversation, Message, ModelInfo, TuningOptions } from "./types";
 import { FALLBACK_MODELS } from "./types";
 import { nanoid, parseContent } from "./lib/utils";
 
@@ -21,6 +22,7 @@ export default function App() {
   const [showThinking, setShowThinking] = useState<boolean>(true);
   const [showPullModal, setShowPullModal] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [tuningOptions, setTuningOptions] = useState<TuningOptions>({ temperature: 0.7, num_ctx: 2048 });
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") || "light";
@@ -104,6 +106,7 @@ export default function App() {
       fd.append("model", selectedModel);
       fd.append("text", text);
       fd.append("showThinking", showThinking.toString());
+      fd.append("options_json", JSON.stringify(tuningOptions));
       for (const file of files) fd.append("file", file);
 
       const res = await fetch("http://127.0.0.1:5000/chat", {
@@ -245,6 +248,8 @@ export default function App() {
           onNewChat={createConversation}
           theme={theme}
           toggleTheme={toggleTheme}
+          tuningOptions={tuningOptions}
+          setTuningOptions={setTuningOptions}
         />
         <ChatPane conversation={activeConv} isStreaming={isStreaming} showThinking={showThinking} />
         <Composer

@@ -94,10 +94,20 @@ def chat():
         model_name = data.get('model', 'deepseek-r1:8b')
         messages = data.get('messages', [])
         show_thinking = data.get('showThinking', True)
+        options = data.get('options', {})
     else:
         model_name = request.form.get('model', 'deepseek-r1:8b')
         user_text = request.form.get('text', '')
         show_thinking = request.form.get('showThinking', 'true').lower() == 'true'
+
+        # Try to parse options_json from formData
+        options_json = request.form.get('options_json', None)
+        options = {}
+        if options_json:
+            try:
+                options = json.loads(options_json)
+            except:
+                pass
 
         message_obj = {"role": "user", "content": user_text}
 
@@ -155,6 +165,8 @@ def chat():
                 "messages": messages,
                 "think": show_thinking
             }
+            if options:
+                payload["options"] = options
 
             in_thinking = False
 
