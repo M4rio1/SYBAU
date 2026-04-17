@@ -59,6 +59,34 @@ def pull_model():
 
     return Response(stream_with_context(generate()), content_type='application/x-ndjson')
 
+@app.route('/ps', methods=['GET'])
+def get_ps():
+    try:
+        url = 'http://127.0.0.1:11434/api/ps'
+        res = requests.get(url)
+        return Response(res.content, status=res.status_code, mimetype='application/json')
+    except Exception as e:
+        print(f"Error fetching ps: {e}")
+        return {"models": []}, 500
+
+@app.route('/unload', methods=['POST'])
+def unload_model():
+    data = request.json
+    model_name = data.get('model')
+    if not model_name:
+        return {"error": "model is required"}, 400
+    try:
+        url = 'http://127.0.0.1:11434/api/chat'
+        payload = {
+            "model": model_name,
+            "keep_alive": 0
+        }
+        res = requests.post(url, json=payload)
+        return Response(res.content, status=res.status_code, mimetype='application/json')
+    except Exception as e:
+        print(f"Error unloading model: {e}")
+        return {"error": str(e)}, 500
+
 @app.route('/chat', methods=['POST'])
 def chat():
     if request.is_json:

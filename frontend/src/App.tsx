@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import ChatPane from "./components/ChatPane";
 import Composer from "./components/Composer";
 import PullModelModal from "./components/PullModelModal";
+import HardwareMonitor from "./components/HardwareMonitor";
 import type { Conversation, Message, ModelInfo } from "./types";
 import { FALLBACK_MODELS } from "./types";
 import { nanoid, parseContent } from "./lib/utils";
@@ -253,8 +254,10 @@ export default function App() {
           disabled={false}
         />
 
+        <HardwareMonitor />
+
         {showPullModal && (
-          <PullModelModal 
+          <PullModelModal  
             onClose={() => setShowPullModal(false)} 
             onSuccess={() => fetchModels()} 
           />
