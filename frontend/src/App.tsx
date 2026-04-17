@@ -66,6 +66,19 @@ export default function App() {
       setActiveId(convId);
     }
 
+    // Convert images to base64 for local rendering
+    const base64Images = await Promise.all(
+      files
+        .filter((f) => f.type.startsWith("image/"))
+        .map((f) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsDataURL(f);
+          });
+        })
+    );
+
     const userMsgId = nanoid();
     const assistantMsgId = nanoid();
 
@@ -73,7 +86,9 @@ export default function App() {
       id: userMsgId,
       role: "user",
       content: text,
-      files: files.map((f) => f.name),
+      files: files.length > 0 ? files.map(f => f.name) : undefined,
+      images: base64Images.length > 0 ? base64Images : undefined,
+      timestamp: Date.now(),
     };
     const assistantMsg: Message = {
       id: assistantMsgId,

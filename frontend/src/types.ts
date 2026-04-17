@@ -7,6 +7,7 @@ export interface Message {
   isError?: boolean
   thinking?: string | null
   thinkingDone?: boolean
+  images?: string[] // base64 encoded for rendering locally
 }
 
 export interface Conversation {

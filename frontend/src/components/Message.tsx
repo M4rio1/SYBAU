@@ -45,6 +45,19 @@ export default function MessageItem({ message, showThinking = true }: Props) {
                 ))}
               </div>
             )}
+            {message.images && message.images.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-white/10">
+                {message.images.map((imgBase64, idx) => (
+                  <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/10 shadow-sm">
+                    <img 
+                      src={imgBase64} 
+                      alt="attachment" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
