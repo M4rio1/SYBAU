@@ -8,6 +8,7 @@ interface Props {
   onModelChange: (model: string) => void;
   showThinking: boolean;
   onToggleThinking: () => void;
+  onOpenPullModal: () => void;
   onNewChat: () => void;
   theme: string;
   toggleTheme: () => void;
@@ -20,6 +21,7 @@ export default function Header({
   onModelChange,
   showThinking,
   onToggleThinking,
+  onOpenPullModal,
   onNewChat,
   theme,
   toggleTheme,
@@ -28,7 +30,12 @@ export default function Header({
     <header className="absolute top-5 right-5 z-50">
       {/* Right: model selector + thinking toggle + new chat */}
       <div className="flex items-center gap-2 shrink-0 relative">
-        <ModelSelector value={selectedModel} models={models} onChange={onModelChange} />
+        <ModelSelector 
+          value={selectedModel} 
+          models={models} 
+          onChange={onModelChange} 
+          onOpenPullModal={onOpenPullModal}
+        />
 
         <button
           onClick={onToggleThinking}

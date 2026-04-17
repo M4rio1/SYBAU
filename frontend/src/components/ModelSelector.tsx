@@ -6,9 +6,10 @@ interface Props {
   value: string;
   models: ModelInfo[];
   onChange: (model: string) => void;
+  onOpenPullModal?: () => void;
 }
 
-export default function ModelSelector({ value, models, onChange }: Props) {
+export default function ModelSelector({ value, models, onChange, onOpenPullModal }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -88,6 +89,26 @@ export default function ModelSelector({ value, models, onChange }: Props) {
               )}
             </button>
           ))}
+          
+          {onOpenPullModal && (
+            <>
+              <div className="h-px bg-zinc-200 dark:bg-white/10 my-1 mx-2" />
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  onOpenPullModal();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left transition-colors text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 font-medium list-none"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0 object-contain">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span className="truncate">Descargar modelo..</span>
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

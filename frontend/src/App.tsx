@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import ChatPane from "./components/ChatPane";
 import Composer from "./components/Composer";
+import PullModelModal from "./components/PullModelModal";
 import type { Conversation, Message, ModelInfo } from "./types";
 import { FALLBACK_MODELS } from "./types";
 import { nanoid, parseContent } from "./lib/utils";
@@ -17,6 +18,7 @@ export default function App() {
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>(FALLBACK_MODELS);
   const [selectedModel, setSelectedModel] = useState<string>(FALLBACK_MODELS[0].value);
   const [showThinking, setShowThinking] = useState<boolean>(true);
+  const [showPullModal, setShowPullModal] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -179,28 +181,29 @@ export default function App() {
     );
   };
 
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        const res = await fetch("http://127.0.0.1:5000/tags");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.models && Array.isArray(data.models) && data.models.length > 0) {
-            const fetchedModels: ModelInfo[] = data.models.map((m: any) => ({
-              value: m.name,
-              label: m.name // We use the name itself as label
-            }));
-            setAvailableModels(fetchedModels);
-            // Verify if selected model exists in fetched models
-            if (!fetchedModels.find(m => m.value === selectedModel)) {
-              setSelectedModel(fetchedModels[0].value);
-            }
+  const fetchModels = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/tags");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.models && Array.isArray(data.models) && data.models.length > 0) {
+          const fetchedModels: ModelInfo[] = data.models.map((m: any) => ({
+            value: m.name,
+            label: m.name // We use the name itself as label
+          }));
+          setAvailableModels(fetchedModels);
+          // Verify if selected model exists in fetched models
+          if (!fetchedModels.find(m => m.value === selectedModel)) {
+            setSelectedModel(fetchedModels[0].value);
           }
         }
-      } catch (err) {
-        console.error("Failed to fetch models from server:", err);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch models from server:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchModels();
   }, [selectedModel]);
 
@@ -237,6 +240,7 @@ export default function App() {
           onModelChange={setSelectedModel}
           showThinking={showThinking}
           onToggleThinking={() => setShowThinking(!showThinking)}
+          onOpenPullModal={() => setShowPullModal(true)}
           onNewChat={createConversation}
           theme={theme}
           toggleTheme={toggleTheme}
@@ -248,6 +252,13 @@ export default function App() {
           isGenerating={isStreaming}
           disabled={false}
         />
+
+        {showPullModal && (
+          <PullModelModal 
+            onClose={() => setShowPullModal(false)} 
+            onSuccess={() => fetchModels()} 
+          />
+        )}
       </div>
     </div>
   );

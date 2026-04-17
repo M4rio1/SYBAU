@@ -39,6 +39,26 @@ def get_tags():
         print(f"Error fetching tags: {e}")
         return {"models": []}, 500
 
+@app.route('/pull', methods=['POST'])
+def pull_model():
+    data = request.json
+    model_name = data.get('name')
+    if not model_name:
+        return {"error": "name is required"}, 400
+
+    def generate():
+        url = 'http://127.0.0.1:11434/api/pull'
+        payload = {"name": model_name}
+        try:
+            with requests.post(url, json=payload, stream=True) as r:
+                for line in r.iter_lines():
+                    if line:
+                        yield line + b'\n'
+        except Exception as e:
+            yield json.dumps({"error": str(e)}).encode('utf-8') + b'\n'
+
+    return Response(stream_with_context(generate()), content_type='application/x-ndjson')
+
 @app.route('/chat', methods=['POST'])
 def chat():
     if request.is_json:
