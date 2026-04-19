@@ -1,11 +1,19 @@
 import { useRef, useState, useEffect } from "react";
 import { HoverBorderGradient } from "./ui/hover-border-gradient";
+import ModelSelector from "./ModelSelector";
+import type { ModelInfo } from "../types";
 
 interface Props {
   onSend: (text: string, files: File[]) => void;
   onStop: () => void;
   isGenerating: boolean;
   disabled?: boolean;
+  selectedModel: string;
+  models: ModelInfo[];
+  onModelChange: (model: string) => void;
+  onOpenPullModal?: () => void;
+  showThinking: boolean;
+  onToggleThinking: () => void;
 }
 
 export default function Composer({
@@ -13,6 +21,12 @@ export default function Composer({
   onStop,
   isGenerating,
   disabled = false,
+  selectedModel,
+  models,
+  onModelChange,
+  onOpenPullModal,
+  showThinking,
+  onToggleThinking,
 }: Props) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -133,18 +147,28 @@ export default function Composer({
           />
 
           <div className="flex items-center justify-between px-3 pb-3 pt-1">
-            {/* Left actions */}
-            <div className="flex items-center gap-0.5">
+            {/* Left: model selector + file actions + thinking */}
+            <div className="flex items-center gap-1">
+              <ModelSelector
+                value={selectedModel}
+                models={models}
+                onChange={onModelChange}
+                onOpenPullModal={onOpenPullModal}
+                compact
+              />
+
+              <div className="w-px h-4 bg-zinc-200 dark:bg-white/10 mx-0.5" />
+
               {/* Attach file */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/8 transition-colors cursor-pointer"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/8 transition-colors cursor-pointer"
                 title="Attach file"
                 disabled={disabled}
               >
                 <svg
-                  width="15"
-                  height="15"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -158,7 +182,7 @@ export default function Composer({
               {hasMic && (
                 <button
                   onClick={toggleMic}
-                  className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
                     isRecording
                       ? "text-red-600 bg-red-500/10 border border-red-500/20 animate-pulse cursor-pointer"
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/8 cursor-pointer"
@@ -169,7 +193,7 @@ export default function Composer({
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="currentColor"
                     >
                       <path d="M73 39.1C63.6 29.7 48.4 29.7 39.1 39.1C29.8 48.5 29.7 63.7 39 73.1L567 601.1C576.4 610.5 591.6 610.5 600.9 601.1C610.2 591.7 610.3 576.5 600.9 567.2L456.7 422.8C490.9 388.2 512 340.6 512 288L512 248C512 234.7 501.3 224 488 224C474.7 224 464 234.7 464 248L464 288C464 327.3 448.3 362.9 422.7 388.9L388.8 355C405.6 337.7 416 314 416 288L416 160C416 107 373 64 320 64C267 64 224 107 224 160L224 190.2L73 39.2zM371.3 473.1L329.9 431.7C326.6 431.9 323.4 432 320.1 432C240.6 432 176.1 367.5 176.1 288L176.1 277.8L132.5 234.2C129.7 238.1 128.1 242.9 128.1 248L128.1 288C128.1 385.9 201.4 466.7 296.1 478.5L296.1 528L248.1 528C234.8 528 224.1 538.7 224.1 552C224.1 565.3 234.8 576 248.1 576L392.1 576C405.4 576 416.1 565.3 416.1 552C416.1 538.7 405.4 528 392.1 528L344.1 528L344.1 478.5C353.4 477.3 362.5 475.5 371.4 473.1z" />
@@ -178,7 +202,7 @@ export default function Composer({
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="currentColor"
                     >
                       <path d="M320 64C267 64 224 107 224 160L224 288C224 341 267 384 320 384C373 384 416 341 416 288L416 160C416 107 373 64 320 64zM176 248C176 234.7 165.3 224 152 224C138.7 224 128 234.7 128 248L128 288C128 385.9 201.3 466.7 296 478.5L296 528L248 528C234.7 528 224 538.7 224 552C224 565.3 234.7 576 248 576L392 576C405.3 576 416 565.3 416 552C416 538.7 405.3 528 392 528L344 528L344 478.5C438.7 466.7 512 385.9 512 288L512 248C512 234.7 501.3 224 488 224C474.7 224 464 234.7 464 248L464 288C464 367.5 399.5 432 320 432C240.5 432 176 367.5 176 288L176 248z" />
@@ -186,6 +210,29 @@ export default function Composer({
                   )}
                 </button>
               )}
+
+              {/* Thinking toggle */}
+              <button
+                onClick={onToggleThinking}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+                  showThinking
+                    ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/8"
+                }`}
+                title={showThinking ? "Thinking: On" : "Thinking: Off"}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+                  <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+                </svg>
+              </button>
 
               <input
                 ref={fileInputRef}
@@ -208,7 +255,7 @@ export default function Composer({
             <button
               onClick={handleSend}
               disabled={!isGenerating && !canSend}
-              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 ${
                 isGenerating
                   ? "bg-red-500/15 text-red-500 hover:bg-red-500/25 border border-red-500/25 cursor-pointer"
                   : canSend
@@ -221,7 +268,7 @@ export default function Composer({
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 640 640"
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="currentColor"
                 >
                   <path d="M160 96L480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160C96 124.7 124.7 96 160 96z" />
@@ -230,7 +277,7 @@ export default function Composer({
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 640 640"
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="currentColor"
                 >
                   <path d="M568.4 37.7C578.2 34.2 589 36.7 596.4 44C603.8 51.3 606.2 62.2 602.7 72L424.7 568.9C419.7 582.8 406.6 592 391.9 592C377.7 592 364.9 583.4 359.6 570.3L295.4 412.3C290.9 401.3 292.9 388.7 300.6 379.7L395.1 267.3C400.2 261.2 399.8 252.3 394.2 246.7C388.6 241.1 379.6 240.7 373.6 245.8L261.2 340.1C252.1 347.7 239.6 349.7 228.6 345.3L70.1 280.8C57 275.5 48.4 262.7 48.4 248.5C48.4 233.8 57.6 220.7 71.5 215.7L568.4 37.7z" />

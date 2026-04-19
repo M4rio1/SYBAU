@@ -1,12 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
 import ChatPane from "./components/ChatPane";
 import Composer from "./components/Composer";
 import PullModelModal from "./components/PullModelModal";
 import CreateModelModal from "./components/CreateModelModal";
 import HardwareMonitor from "./components/HardwareMonitor";
-import TuningPanel from "./components/TuningPanel";
 import type { Conversation, Message, ModelInfo, TuningOptions } from "./types";
 import { FALLBACK_MODELS } from "./types";
 import { nanoid, parseContent } from "./lib/utils";
@@ -18,13 +16,19 @@ function makeTitle(text: string): string {
 export default function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [availableModels, setAvailableModels] = useState<ModelInfo[]>(FALLBACK_MODELS);
-  const [selectedModel, setSelectedModel] = useState<string>(FALLBACK_MODELS[0].value);
+  const [availableModels, setAvailableModels] =
+    useState<ModelInfo[]>(FALLBACK_MODELS);
+  const [selectedModel, setSelectedModel] = useState<string>(
+    FALLBACK_MODELS[0].value,
+  );
   const [showThinking, setShowThinking] = useState<boolean>(true);
   const [showPullModal, setShowPullModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [tuningOptions, setTuningOptions] = useState<TuningOptions>({ temperature: 0.7, num_ctx: 2048 });
+  const [tuningOptions, setTuningOptions] = useState<TuningOptions>({
+    temperature: 0.7,
+    num_ctx: 2048,
+  });
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") || "light";
@@ -78,7 +82,7 @@ export default function App() {
             reader.onload = (e) => resolve(e.target?.result as string);
             reader.readAsDataURL(f);
           });
-        })
+        }),
     );
 
     const userMsgId = nanoid();
@@ -88,9 +92,8 @@ export default function App() {
       id: userMsgId,
       role: "user",
       content: text,
-      files: files.length > 0 ? files.map(f => f.name) : undefined,
+      files: files.length > 0 ? files.map((f) => f.name) : undefined,
       images: base64Images.length > 0 ? base64Images : undefined,
-      timestamp: Date.now(),
     };
     const assistantMsg: Message = {
       id: assistantMsgId,
@@ -207,14 +210,18 @@ export default function App() {
       const res = await fetch("http://127.0.0.1:5000/tags");
       if (res.ok) {
         const data = await res.json();
-        if (data.models && Array.isArray(data.models) && data.models.length > 0) {
+        if (
+          data.models &&
+          Array.isArray(data.models) &&
+          data.models.length > 0
+        ) {
           const fetchedModels: ModelInfo[] = data.models.map((m: any) => ({
             value: m.name,
-            label: m.name // We use the name itself as label
+            label: m.name, // We use the name itself as label
           }));
           setAvailableModels(fetchedModels);
           // Verify if selected model exists in fetched models
-          if (!fetchedModels.find(m => m.value === selectedModel)) {
+          if (!fetchedModels.find((m) => m.value === selectedModel)) {
             setSelectedModel(fetchedModels[0].value);
           }
         }
@@ -251,38 +258,38 @@ export default function App() {
         onNew={createConversation}
         onDelete={handleDelete}
         onRename={handleRename}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        tuningOptions={tuningOptions}
+        setTuningOptions={setTuningOptions}
+        onOpenCreateModal={() => setShowCreateModal(true)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <Header
+        <ChatPane
           conversation={activeConv}
-          selectedModel={selectedModel}
-          models={availableModels}
-          onModelChange={setSelectedModel}
+          isStreaming={isStreaming}
           showThinking={showThinking}
-          onToggleThinking={() => setShowThinking(!showThinking)}
-          onOpenPullModal={() => setShowPullModal(true)}
-          onOpenCreateModal={() => setShowCreateModal(true)}
-          onNewChat={createConversation}
-          theme={theme}
-          toggleTheme={toggleTheme}
-          tuningOptions={tuningOptions}
-          setTuningOptions={setTuningOptions}
         />
-        <ChatPane conversation={activeConv} isStreaming={isStreaming} showThinking={showThinking} />
         <Composer
           onSend={handleSend}
           onStop={handleStop}
           isGenerating={isStreaming}
           disabled={false}
+          selectedModel={selectedModel}
+          models={availableModels}
+          onModelChange={setSelectedModel}
+          onOpenPullModal={() => setShowPullModal(true)}
+          showThinking={showThinking}
+          onToggleThinking={() => setShowThinking(!showThinking)}
         />
 
         <HardwareMonitor />
 
         {showPullModal && (
-          <PullModelModal  
-            onClose={() => setShowPullModal(false)} 
-            onSuccess={() => fetchModels()} 
+          <PullModelModal
+            onClose={() => setShowPullModal(false)}
+            onSuccess={() => fetchModels()}
           />
         )}
 
